@@ -3,8 +3,10 @@ export type NdaType = "mutual" | "unilateral";
 export interface NdaData {
   ndaType: NdaType;
   disclosingPartyName: string;
+  disclosingPartyEmail: string;
   disclosingPartyAddress: string;
   receivingPartyName: string;
+  receivingPartyEmail: string;
   receivingPartyAddress: string;
   purpose: string;
   durationYears: number;

@@ -27,8 +27,10 @@ export default function CreatePage() {
   const [form, setForm] = useState<NdaData>({
     ndaType: "mutual",
     disclosingPartyName: "",
+    disclosingPartyEmail: "",
     disclosingPartyAddress: "",
     receivingPartyName: "",
+    receivingPartyEmail: "",
     receivingPartyAddress: "",
     purpose: "",
     durationYears: 2,
@@ -43,9 +45,9 @@ export default function CreatePage() {
   function canAdvance() {
     if (step === 1) return true;
     if (step === 2)
-      return form.disclosingPartyName && form.disclosingPartyAddress;
+      return form.disclosingPartyName && form.disclosingPartyEmail && form.disclosingPartyAddress;
     if (step === 3)
-      return form.receivingPartyName && form.receivingPartyAddress;
+      return form.receivingPartyName && form.receivingPartyEmail && form.receivingPartyAddress;
     if (step === 4) return form.purpose;
     return true;
   }
@@ -163,6 +165,21 @@ export default function CreatePage() {
                 />
               </div>
               <div>
+                <label className={labelClass}>Email address</label>
+                <input
+                  type="email"
+                  className={inputClass}
+                  placeholder="alice@acme.com"
+                  value={form.disclosingPartyEmail}
+                  onChange={(e) =>
+                    update("disclosingPartyEmail", e.target.value)
+                  }
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  The NDA will be sent here for e-signature.
+                </p>
+              </div>
+              <div>
                 <label className={labelClass}>Address</label>
                 <input
                   type="text"
@@ -204,6 +221,21 @@ export default function CreatePage() {
                     update("receivingPartyName", e.target.value)
                   }
                 />
+              </div>
+              <div>
+                <label className={labelClass}>Email address</label>
+                <input
+                  type="email"
+                  className={inputClass}
+                  placeholder="bob@beta.com"
+                  value={form.receivingPartyEmail}
+                  onChange={(e) =>
+                    update("receivingPartyEmail", e.target.value)
+                  }
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  The NDA will be sent here for e-signature.
+                </p>
               </div>
               <div>
                 <label className={labelClass}>Address</label>
@@ -378,7 +410,7 @@ export default function CreatePage() {
               onClick={handleCheckout}
               className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
             >
-              {loading ? "Redirecting..." : "Pay $29 & Download"}
+              {loading ? "Redirecting..." : "Pay $29 & Send for Signing"}
             </button>
           )}
         </div>

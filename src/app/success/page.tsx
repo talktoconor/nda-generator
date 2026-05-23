@@ -1,18 +1,43 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { jsPDF } from "jspdf";
 import { generateNdaText, type NdaData } from "@/lib/nda-template";
 
+type Status = "loading" | "sending" | "sent" | "error";
+
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading"
-  );
+  const [status, setStatus] = useState<Status>("loading");
   const [ndaData, setNdaData] = useState<NdaData | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const sendForSigning = useCallback(
+    async (data: NdaData, sid: string) => {
+      setStatus("sending");
+      try {
+        const res = await fetch("/api/send-nda", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ndaData: data, sessionId: sid }),
+        });
+        if (res.ok) {
+          setStatus("sent");
+        } else {
+          // SignWell might not be configured — still show PDF download
+          setErrorMsg("e-signature");
+          setStatus("sent");
+        }
+      } catch {
+        setErrorMsg("e-signature");
+        setStatus("sent");
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!sessionId) {
@@ -25,13 +50,13 @@ function SuccessContent() {
       .then((data) => {
         if (data.paid && data.ndaData) {
           setNdaData(data.ndaData);
-          setStatus("ready");
+          sendForSigning(data.ndaData, sessionId);
         } else {
           setStatus("error");
         }
       })
       .catch(() => setStatus("error"));
-  }, [sessionId]);
+  }, [sessionId, sendForSigning]);
 
   function downloadPdf() {
     if (!ndaData) return;
@@ -51,7 +76,8 @@ function SuccessContent() {
     for (const line of lines) {
       if (
         line === "NON-DISCLOSURE AGREEMENT" ||
-        line === "IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date."
+        line ===
+          "IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date."
       ) {
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
@@ -101,11 +127,15 @@ function SuccessContent() {
     doc.save(filename);
   }
 
-  if (status === "loading") {
+  if (status === "loading" || status === "sending") {
     return (
       <div className="text-center py-24">
         <div className="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-gray-500">Verifying payment...</p>
+        <p className="mt-4 text-gray-500">
+          {status === "loading"
+            ? "Verifying payment..."
+            : "Sending NDA for e-signature..."}
+        </p>
       </div>
     );
   }
@@ -145,10 +175,43 @@ function SuccessContent() {
           />
         </svg>
       </div>
-      <h2 className="text-2xl font-bold mb-3">Your NDA is ready</h2>
-      <p className="text-gray-500 mb-8">
-        Payment confirmed. Download your customized NDA below.
-      </p>
+
+      {errorMsg === "e-signature" ? (
+        <>
+          <h2 className="text-2xl font-bold mb-3">Your NDA is ready</h2>
+          <p className="text-gray-500 mb-8">
+            Payment confirmed. Download your NDA below.
+          </p>
+        </>
+      ) : (
+        <>
+          <h2 className="text-2xl font-bold mb-3">NDA sent for signing</h2>
+          <p className="text-gray-500 mb-2">
+            Both parties will receive an email with a link to sign the NDA
+            electronically.
+          </p>
+          {ndaData && (
+            <div className="bg-gray-50 rounded-lg p-4 text-sm text-left mb-8 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Sent to</span>
+                <span className="font-medium">
+                  {ndaData.disclosingPartyEmail}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">and</span>
+                <span className="font-medium">
+                  {ndaData.receivingPartyEmail}
+                </span>
+              </div>
+            </div>
+          )}
+          <p className="text-xs text-gray-400 mb-6">
+            You can also download an unsigned copy for your records.
+          </p>
+        </>
+      )}
+
       <button
         onClick={downloadPdf}
         className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
