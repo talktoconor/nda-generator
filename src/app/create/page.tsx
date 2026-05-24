@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { NdaData, NdaType } from "@/lib/nda-template";
 import { trackCheckoutStart } from "@/components/conversion-events";
@@ -22,22 +23,52 @@ function todayString() {
   return new Date().toISOString().split("T")[0];
 }
 
-export default function CreatePage() {
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function getTierPricing(tier: string | null): { label: string; displayPrice: string; buttonPrice: string; amountCents: number } {
+  if (tier === "pro" || tier === "biz") {
+    return { label: tier === "pro" ? "Pro" : "Business", displayPrice: "$59.00", buttonPrice: "$59", amountCents: 5900 };
+  }
+  return { label: "Basic", displayPrice: "$29.00", buttonPrice: "$29", amountCents: 2900 };
+}
+
+const defaultFormData: NdaData = {
+  ndaType: "mutual",
+  disclosingPartyName: "",
+  disclosingPartyEmail: "",
+  disclosingPartyAddress: "",
+  receivingPartyName: "",
+  receivingPartyEmail: "",
+  receivingPartyAddress: "",
+  purpose: "",
+  durationYears: 2,
+  governingState: "Delaware",
+  effectiveDate: todayString(),
+};
+
+function CreateContent() {
+  const searchParams = useSearchParams();
+  const tier = searchParams.get("tier");
+  const pricing = getTierPricing(tier);
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState<NdaData>({
-    ndaType: "mutual",
-    disclosingPartyName: "",
-    disclosingPartyEmail: "",
-    disclosingPartyAddress: "",
-    receivingPartyName: "",
-    receivingPartyEmail: "",
-    receivingPartyAddress: "",
-    purpose: "",
-    durationYears: 2,
-    governingState: "Delaware",
-    effectiveDate: todayString(),
+  const [error, setError] = useState("");
+  const [form, setForm] = useState<NdaData>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ndanow_draft");
+      if (saved) {
+        try { return JSON.parse(saved); } catch { /* ignore */ }
+      }
+    }
+    return defaultFormData;
   });
+
+  useEffect(() => {
+    localStorage.setItem("ndanow_draft", JSON.stringify(form));
+  }, [form]);
 
   function update(field: keyof NdaData, value: string | number) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -46,31 +77,33 @@ export default function CreatePage() {
   function canAdvance() {
     if (step === 1) return true;
     if (step === 2)
-      return form.disclosingPartyName && form.disclosingPartyEmail && form.disclosingPartyAddress;
+      return form.disclosingPartyName && isValidEmail(form.disclosingPartyEmail) && form.disclosingPartyAddress;
     if (step === 3)
-      return form.receivingPartyName && form.receivingPartyEmail && form.receivingPartyAddress;
+      return form.receivingPartyName && isValidEmail(form.receivingPartyEmail) && form.receivingPartyAddress;
     if (step === 4) return form.purpose;
     return true;
   }
 
   async function handleCheckout() {
     setLoading(true);
+    setError("");
     trackCheckoutStart(form.ndaType);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, tier: tier || "basic" }),
       });
       const data = await res.json();
       if (data.url) {
+        localStorage.removeItem("ndanow_draft");
         window.location.href = data.url;
       } else {
-        alert("Something went wrong. Please try again.");
+        setError("Something went wrong. Please try again.");
         setLoading(false);
       }
     } catch {
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
@@ -180,6 +213,11 @@ export default function CreatePage() {
                 <p className="text-xs text-gray-400 mt-1">
                   The NDA will be sent here for e-signature.
                 </p>
+                {form.disclosingPartyEmail && !isValidEmail(form.disclosingPartyEmail) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Please enter a valid email address
+                  </p>
+                )}
               </div>
               <div>
                 <label className={labelClass}>Address</label>
@@ -238,6 +276,11 @@ export default function CreatePage() {
                 <p className="text-xs text-gray-400 mt-1">
                   The NDA will be sent here for e-signature.
                 </p>
+                {form.receivingPartyEmail && !isValidEmail(form.receivingPartyEmail) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Please enter a valid email address
+                  </p>
+                )}
               </div>
               <div>
                 <label className={labelClass}>Address</label>
@@ -374,12 +417,21 @@ export default function CreatePage() {
                 <span className="text-gray-500">Effective date</span>
                 <span className="font-medium">{form.effectiveDate}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Plan</span>
+                <span className="font-medium">{pricing.label}</span>
+              </div>
               <hr className="border-gray-200" />
               <div className="flex justify-between text-base">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-blue-600">$29.00</span>
+                <span className="font-bold text-blue-600">{pricing.displayPrice}</span>
               </div>
             </div>
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {error}
+              </div>
+            )}
           </div>
         )}
 
@@ -412,11 +464,25 @@ export default function CreatePage() {
               onClick={handleCheckout}
               className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
             >
-              {loading ? "Redirecting..." : "Pay $29 & Send for Signing"}
+              {loading ? "Redirecting..." : `Pay ${pricing.buttonPrice} & Send for Signing`}
             </button>
           )}
         </div>
       </main>
     </div>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-full flex items-center justify-center">
+          <div className="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <CreateContent />
+    </Suspense>
   );
 }

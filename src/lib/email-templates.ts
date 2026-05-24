@@ -32,11 +32,11 @@ interface PurchaseConfirmationProps {
   disclosingPartyName: string;
   receivingPartyName: string;
   ndaType: string;
-  jurisdiction: string;
+  governingState: string;
 }
 
 export function purchaseConfirmation(props: PurchaseConfirmationProps) {
-  const { disclosingPartyName, receivingPartyName, ndaType, jurisdiction } = props;
+  const { disclosingPartyName, receivingPartyName, ndaType, governingState } = props;
   return {
     subject: "Your NDA is ready - NDANow",
     html: wrapEmail(`
@@ -49,7 +49,7 @@ export function purchaseConfirmation(props: PurchaseConfirmationProps) {
           <tr><td style="padding: 4px 0; color: #6b7280;">Type</td><td style="padding: 4px 0; font-weight: 500;">${ndaType === "mutual" ? "Mutual (Two-Way)" : "Unilateral (One-Way)"}</td></tr>
           <tr><td style="padding: 4px 0; color: #6b7280;">Party A</td><td style="padding: 4px 0; font-weight: 500;">${disclosingPartyName}</td></tr>
           <tr><td style="padding: 4px 0; color: #6b7280;">Party B</td><td style="padding: 4px 0; font-weight: 500;">${receivingPartyName}</td></tr>
-          <tr><td style="padding: 4px 0; color: #6b7280;">Jurisdiction</td><td style="padding: 4px 0; font-weight: 500;">${jurisdiction}</td></tr>
+          <tr><td style="padding: 4px 0; color: #6b7280;">Jurisdiction</td><td style="padding: 4px 0; font-weight: 500;">${governingState}</td></tr>
         </table>
       </div>
 

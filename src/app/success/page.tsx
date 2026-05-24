@@ -13,6 +13,7 @@ type Status = "loading" | "sending" | "sent" | "error";
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const tier = searchParams.get("tier");
   const [status, setStatus] = useState<Status>("loading");
   const [ndaData, setNdaData] = useState<NdaData | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -55,7 +56,8 @@ function SuccessContent() {
           sendForSigning(data.ndaData, sessionId);
 
           // Fire conversion events
-          trackPurchase(29);
+          const purchaseValue = (tier === "pro" || tier === "biz") ? 59 : 29;
+          trackPurchase(purchaseValue);
 
           // Send server-side attribution
           const utm = getStoredUtmParams();
@@ -64,7 +66,7 @@ function SuccessContent() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               event: "purchase",
-              value: 29,
+              value: purchaseValue,
               nda_type: data.ndaData.ndaType,
               ...utm,
               timestamp: new Date().toISOString(),
@@ -82,7 +84,7 @@ function SuccessContent() {
                 disclosingPartyName: data.ndaData.disclosingPartyName,
                 receivingPartyName: data.ndaData.receivingPartyName,
                 ndaType: data.ndaData.ndaType,
-                jurisdiction: data.ndaData.jurisdiction,
+                governingState: data.ndaData.governingState,
               },
             }),
           }).catch(() => {}); // non-blocking

@@ -14,6 +14,8 @@ import {
  *   - type: "purchase" | "signing-guide" | "upsell" | "subscription" | "discount"
  *   - to: recipient email
  *   - data: template-specific data
+ *
+ * Rate limiting is handled by middleware.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +30,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing type or to" }, { status: 400 });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(to)) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    }
+
+    // Validate required data fields per template type
+    if (type === "purchase") {
+      if (!data?.disclosingPartyName || !data?.receivingPartyName || !data?.ndaType) {
+        return NextResponse.json({ error: "Missing required data for purchase email" }, { status: 400 });
+      }
+    } else if (type === "signing-guide" || type === "upsell" || type === "subscription") {
+      if (!data?.recipientName) {
+        return NextResponse.json({ error: "Missing recipientName" }, { status: 400 });
+      }
+    }
+
     let email: { subject: string; html: string };
 
     switch (type) {
@@ -36,7 +55,7 @@ export async function POST(request: NextRequest) {
           disclosingPartyName: data.disclosingPartyName,
           receivingPartyName: data.receivingPartyName,
           ndaType: data.ndaType,
-          jurisdiction: data.jurisdiction,
+          governingState: data.governingState,
         });
         break;
       case "signing-guide":

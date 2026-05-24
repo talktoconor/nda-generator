@@ -5,12 +5,14 @@ import { discountOffer } from "@/lib/email-templates";
 /**
  * POST /api/subscribe
  * Capture email from exit-intent popup, send 15% discount code.
+ * Rate limiting is handled by middleware.
  */
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
-    if (!email || !email.includes("@")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 

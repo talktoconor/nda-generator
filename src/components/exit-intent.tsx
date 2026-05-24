@@ -101,8 +101,8 @@ export function ExitIntentPopup() {
               Wait! Get 15% off.
             </h2>
             <p className="text-gray-600 text-sm mb-6">
-              Enter your email and we&apos;ll send you a 15% discount code
-              for your first NDA. No spam, just savings.
+              Enter your email and we&apos;ll send you an exclusive discount
+              code to use at checkout. No spam, just savings.
             </p>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input

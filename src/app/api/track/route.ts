@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Receives conversion events with UTM data for server-side attribution.
 // In production, this would write to a database (Neon/Supabase) or analytics service.
 // For now, logs the data for development and stores in-memory for the social proof counter.
+// Rate limiting is handled by middleware.
 
 interface TrackingEvent {
   event: string;

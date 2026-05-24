@@ -1,12 +1,28 @@
 import { NextRequest } from "next/server";
 import type { NdaData } from "@/lib/nda-template";
 import { generateNdaHtml } from "@/lib/nda-html";
+import { getStripe } from "@/lib/stripe";
 
 export async function POST(request: NextRequest) {
   const { ndaData, sessionId } = (await request.json()) as {
     ndaData: NdaData;
     sessionId: string;
   };
+
+  // Verify payment before sending to SignWell
+  if (!sessionId) {
+    return Response.json({ error: "Missing session ID" }, { status: 400 });
+  }
+
+  try {
+    const stripeSession =
+      await getStripe().checkout.sessions.retrieve(sessionId);
+    if (stripeSession.payment_status !== "paid") {
+      return Response.json({ error: "Payment not verified" }, { status: 403 });
+    }
+  } catch {
+    return Response.json({ error: "Invalid session" }, { status: 403 });
+  }
 
   const apiKey = process.env.SIGNWELL_API_KEY;
   if (!apiKey) {
