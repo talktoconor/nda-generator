@@ -11,7 +11,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/create`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE_URL}/pricing`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE_URL}/nda`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/nda/enforceability`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/glossary`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/feed.xml`, lastModified: now, changeFrequency: "weekly", priority: 0.3 },
   ];
 
   const ndaPages: MetadataRoute.Sitemap = getAllSlugs().map((segments) => ({

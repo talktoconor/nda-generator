@@ -22,6 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
+      <head>
+        <link rel="alternate" type="application/rss+xml" title="NDANow Blog" href="/feed.xml" />
+      </head>
       <body className="min-h-full flex flex-col bg-white text-gray-900">
         {children}
         <AnalyticsScripts />

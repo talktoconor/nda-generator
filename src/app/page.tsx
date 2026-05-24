@@ -158,6 +158,8 @@ export default function Home() {
           <nav className="flex gap-4">
             <Link href="/pricing" className="hover:text-gray-600">Pricing</Link>
             <Link href="/nda" className="hover:text-gray-600">Templates</Link>
+            <Link href="/nda/enforceability" className="hover:text-gray-600">Enforceability</Link>
+            <Link href="/glossary" className="hover:text-gray-600">Glossary</Link>
             <Link href="/blog" className="hover:text-gray-600">Blog</Link>
           </nav>
         </div>
