@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { AnalyticsScripts } from "@/components/analytics";
 import { UtmCapture } from "@/components/utm-capture";
+import { ExitIntentPopup } from "@/components/exit-intent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-white text-gray-900">
         {children}
+        <ExitIntentPopup />
         <AnalyticsScripts />
         <UtmCapture />
       </body>

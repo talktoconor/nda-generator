@@ -70,6 +70,22 @@ function SuccessContent() {
               timestamp: new Date().toISOString(),
             }),
           }).catch(() => {}); // non-blocking
+
+          // Send purchase confirmation email
+          fetch("/api/email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "purchase",
+              to: data.ndaData.disclosingPartyEmail,
+              data: {
+                disclosingPartyName: data.ndaData.disclosingPartyName,
+                receivingPartyName: data.ndaData.receivingPartyName,
+                ndaType: data.ndaData.ndaType,
+                jurisdiction: data.ndaData.jurisdiction,
+              },
+            }),
+          }).catch(() => {}); // non-blocking
         } else {
           setStatus("error");
         }
