@@ -9,4 +9,5 @@ export function getResend(): Resend {
   return _resend;
 }
 
-export const EMAIL_FROM = "NDANow <noreply@ndanow.app>";
+// Use onboarding@resend.dev until ndanow.app is added as a verified sending domain in Resend
+export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || "NDANow <onboarding@resend.dev>";
