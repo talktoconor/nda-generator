@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { NdaData, NdaType } from "@/lib/nda-template";
+import { trackCheckoutStart } from "@/components/conversion-events";
 
 const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
@@ -54,6 +55,7 @@ export default function CreatePage() {
 
   async function handleCheckout() {
     setLoading(true);
+    trackCheckoutStart(form.ndaType);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",

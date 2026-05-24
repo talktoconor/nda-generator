@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BASE_URL, SITE_DESCRIPTION } from "@/lib/constants";
 import { OrganizationSchema, HowToSchema, ProductSchema } from "@/components/json-ld";
+import { SocialProofCounter, TrustBadges } from "@/components/social-proof";
 
 export const metadata: Metadata = {
   title: "NDANow — Professional NDAs in Minutes | No Lawyer Needed",
@@ -72,6 +73,8 @@ export default function Home() {
                 View Pricing
               </Link>
             </div>
+            <TrustBadges />
+            <SocialProofCounter />
           </div>
         </section>
 

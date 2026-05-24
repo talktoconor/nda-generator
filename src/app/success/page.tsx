@@ -5,6 +5,8 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { jsPDF } from "jspdf";
 import { generateNdaText, type NdaData } from "@/lib/nda-template";
+import { trackPurchase } from "@/components/conversion-events";
+import { getStoredUtmParams } from "@/lib/utm";
 
 type Status = "loading" | "sending" | "sent" | "error";
 
@@ -51,6 +53,23 @@ function SuccessContent() {
         if (data.paid && data.ndaData) {
           setNdaData(data.ndaData);
           sendForSigning(data.ndaData, sessionId);
+
+          // Fire conversion events
+          trackPurchase(29);
+
+          // Send server-side attribution
+          const utm = getStoredUtmParams();
+          fetch("/api/track", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "purchase",
+              value: 29,
+              nda_type: data.ndaData.ndaType,
+              ...utm,
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(() => {}); // non-blocking
         } else {
           setStatus("error");
         }
