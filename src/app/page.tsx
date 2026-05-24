@@ -159,6 +159,7 @@ export default function Home() {
             <Link href="/pricing" className="hover:text-gray-600">Pricing</Link>
             <Link href="/nda" className="hover:text-gray-600">Templates</Link>
             <Link href="/nda/enforceability" className="hover:text-gray-600">Enforceability</Link>
+            <Link href="/tools" className="hover:text-gray-600">Tools</Link>
             <Link href="/glossary" className="hover:text-gray-600">Glossary</Link>
             <Link href="/blog" className="hover:text-gray-600">Blog</Link>
           </nav>
