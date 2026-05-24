@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "NDA Generator — Professional NDAs in Minutes",
   description:
     "Create legally-sound Non-Disclosure Agreements instantly. No lawyer needed. Mutual or unilateral NDAs customized to your needs for just $29.",
+  verification: {
+    google: "gibUFRsJHUq2VzuS8mSMVzWj5Q90-4UKXZdYpd51b_o",
+  },
 };
 
 export default function RootLayout({
