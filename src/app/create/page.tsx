@@ -27,11 +27,14 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function getTierPricing(tier: string | null): { label: string; displayPrice: string; buttonPrice: string; amountCents: number } {
-  if (tier === "pro" || tier === "biz") {
-    return { label: tier === "pro" ? "Pro" : "Business", displayPrice: "$59.00", buttonPrice: "$59", amountCents: 5900 };
+type Tier = "basic" | "pro";
+
+// Only two tiers are sold. Unknown or retired values (such as the old "biz") fall back to Basic.
+function getTierPricing(tier: string | null): { tier: Tier; label: string; displayPrice: string; buttonPrice: string; amountCents: number } {
+  if (tier === "pro") {
+    return { tier: "pro", label: "Pro", displayPrice: "$59.00", buttonPrice: "$59", amountCents: 5900 };
   }
-  return { label: "Basic", displayPrice: "$29.00", buttonPrice: "$29", amountCents: 2900 };
+  return { tier: "basic", label: "Basic", displayPrice: "$29.00", buttonPrice: "$29", amountCents: 2900 };
 }
 
 const defaultFormData: NdaData = {
@@ -92,7 +95,7 @@ function CreateContent() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, tier: tier || "basic" }),
+        body: JSON.stringify({ ...form, tier: pricing.tier }),
       });
       const data = await res.json();
       if (data.url) {

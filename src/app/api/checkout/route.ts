@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
   } catch {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
-  const { tier = "basic", ...ndaData } = body as { tier?: string } & NdaData;
+  const { tier: requestedTier, ...ndaData } = body as { tier?: string } & NdaData;
+  // Only two tiers are sold. Unknown or retired values (such as the old "biz") fall back to Basic.
+  const tier = requestedTier === "pro" ? "pro" : "basic";
 
   // Validate required fields
   if (
@@ -81,14 +83,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const tierPricing: Record<string, number> = {
-    basic: 2900,
-    pro: 5900,
-    biz: 5900, // TODO: implement subscription mode for business tier
-  };
-  const amount = tierPricing[tier] || 2900;
-  const tierLabel =
-    tier === "pro" ? " Professional" : tier === "biz" ? " Business" : "";
+  const amount = tier === "pro" ? 5900 : 2900;
+  const tierLabel = tier === "pro" ? " Professional" : "";
 
   const baseUrl = resolveBaseUrl(request.nextUrl.origin);
 

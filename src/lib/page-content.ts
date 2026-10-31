@@ -84,7 +84,7 @@ function getIndustryContent(d: Record<string, string>): PageContent {
     faqs: [
       { q: `What should a ${d.title.toLowerCase()} NDA include?`, a: `A ${d.title.toLowerCase()} NDA should include a clear definition of confidential information relevant to your industry, obligations of the receiving party, standard exclusions, a reasonable duration (typically 2-3 years), return-of-materials provisions, and remedies for breach.` },
       { q: `How much does an NDA for ${d.title.toLowerCase()} cost?`, a: `Lawyers typically charge $300-$800 for a standard NDA. NDANow creates professionally drafted NDAs for ${d.title.toLowerCase()} businesses starting at $29, with the same legal language and enforceability.` },
-      { q: "Can I customize the NDA for my specific needs?", a: "Yes. NDANow’s NDA generator lets you specify parties, purpose, duration, jurisdiction, and NDA type (mutual or unilateral). Professional and Business tier customers can further customize individual clauses." },
+      { q: "Can I customize the NDA for my specific needs?", a: "Yes. NDANow’s NDA generator lets you specify parties, purpose, duration, jurisdiction, and NDA type (mutual or unilateral). Professional tier customers can further customize individual clauses." },
     ],
     ctaContext: `Create an NDA tailored for the ${d.title.toLowerCase()} industry. Professional clauses, instant delivery, built-in e-signature.`,
   };

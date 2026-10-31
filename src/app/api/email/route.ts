@@ -4,14 +4,13 @@ import {
   purchaseConfirmation,
   signingGuide,
   followUpUpsell,
-  subscriptionUpsell,
   discountOffer,
 } from "@/lib/email-templates";
 
 /**
  * POST /api/email
  * Send transactional emails. Accepts:
- *   - type: "purchase" | "signing-guide" | "upsell" | "subscription" | "discount"
+ *   - type: "purchase" | "signing-guide" | "upsell" | "discount"
  *   - to: recipient email
  *   - data: template-specific data
  *
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
       if (!data?.disclosingPartyName || !data?.receivingPartyName || !data?.ndaType) {
         return NextResponse.json({ error: "Missing required data for purchase email" }, { status: 400 });
       }
-    } else if (type === "signing-guide" || type === "upsell" || type === "subscription") {
+    } else if (type === "signing-guide" || type === "upsell") {
       if (!data?.recipientName) {
         return NextResponse.json({ error: "Missing recipientName" }, { status: 400 });
       }
@@ -63,9 +62,6 @@ export async function POST(request: NextRequest) {
         break;
       case "upsell":
         email = followUpUpsell(data.recipientName);
-        break;
-      case "subscription":
-        email = subscriptionUpsell(data.recipientName);
         break;
       case "discount":
         email = discountOffer(to, data.discountCode || "WELCOME15");

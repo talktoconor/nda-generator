@@ -138,35 +138,6 @@ export function followUpUpsell(recipientName: string) {
   };
 }
 
-export function subscriptionUpsell(recipientName: string) {
-  return {
-    subject: "Unlimited NDAs for $99/mo - NDANow Business",
-    html: wrapEmail(`
-      <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 16px;">Need NDAs on a regular basis?</h1>
-      <p>Hi ${recipientName},</p>
-      <p>If you're creating NDAs regularly, our Business plan could save you significant time and money:</p>
-
-      <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-        <h3 style="margin: 0 0 12px; font-size: 18px;">NDANow Business &mdash; $99/mo</h3>
-        <ul style="padding-left: 20px; font-size: 14px; margin: 0;">
-          <li style="margin-bottom: 6px;">Unlimited NDA generation</li>
-          <li style="margin-bottom: 6px;">Custom clause library</li>
-          <li style="margin-bottom: 6px;">Multiple export formats (PDF, DOCX)</li>
-          <li style="margin-bottom: 6px;">E-signature included on all NDAs</li>
-          <li style="margin-bottom: 6px;">NDA tracking dashboard</li>
-          <li>Priority support</li>
-        </ul>
-      </div>
-
-      <p style="font-size: 14px;">That's less than the cost of <strong>two individual NDAs</strong> — create as many as you need.</p>
-
-      <div style="text-align: center; margin: 24px 0;">
-        <a href="https://www.ndanow.app/pricing" style="display: inline-block; background: ${BRAND_COLOR}; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">Upgrade to Business</a>
-      </div>
-    `),
-  };
-}
-
 export function discountOffer(email: string, discountCode: string) {
   return {
     subject: "15% off your first NDA - NDANow",

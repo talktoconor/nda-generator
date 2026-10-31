@@ -6,7 +6,7 @@ import { ProductSchema, FAQSchema, BreadcrumbSchema } from "@/components/json-ld
 export const metadata: Metadata = {
   title: "Pricing — NDANow | Professional NDAs from $29",
   description:
-    "Create legally-sound NDAs starting at $29. Choose Basic, Professional, or Business plans. No subscription required for one-time purchases.",
+    "Create legally-sound NDAs starting at $29. Choose Basic or Professional. One-time purchase, no subscription.",
   openGraph: {
     title: "Pricing — NDANow",
     description: "Professional NDAs from $29. No lawyer needed.",
@@ -52,29 +52,12 @@ const tiers = [
       "Revision included",
     ],
   },
-  {
-    name: "Business",
-    price: "$99",
-    period: "/month",
-    description: "Unlimited NDAs for growing teams.",
-    cta: "Start Free Trial",
-    href: "/create?tier=biz",
-    popular: false,
-    features: [
-      "Everything in Professional",
-      "Unlimited NDAs",
-      "Team access (5 seats)",
-      "Template library",
-      "Bulk generation",
-      "NDA tracking dashboard",
-    ],
-  },
 ];
 
 const faqs = [
-  { q: "Do I need a subscription to create an NDA?", a: "No. The Basic ($29) and Professional ($59) plans are one-time purchases. You only pay when you need an NDA. The Business plan is a monthly subscription for teams that need unlimited NDAs." },
+  { q: "Do I need a subscription to create an NDA?", a: "No. The Basic ($29) and Professional ($59) plans are one-time purchases. You only pay when you need an NDA." },
   { q: "Is the NDA legally binding?", a: "Yes. Our NDAs use standard legal language recognized across all 50 US states. The e-signature functionality through SignWell is legally binding under the ESIGN Act and UETA." },
-  { q: "Can I customize the NDA clauses?", a: "The Basic plan uses AI-optimized standard clauses. The Professional and Business plans allow you to customize individual clauses, add special provisions, and modify terms to fit your needs." },
+  { q: "Can I customize the NDA clauses?", a: "The Basic plan uses AI-optimized standard clauses. The Professional plan allows you to customize individual clauses, add special provisions, and modify terms to fit your needs." },
   { q: "What if I need help or the NDA isn't right?", a: "We offer a 30-day money-back guarantee on all plans. If the NDA doesn't meet your needs, contact support for a full refund." },
   { q: "How does e-signature work?", a: "After payment, your NDA is automatically sent to both parties via SignWell for electronic signature. Both parties receive an email with a link to review and sign. Once both sign, everyone gets a copy of the fully executed document." },
 ];
@@ -101,12 +84,12 @@ export default function PricingPage() {
         <section className="max-w-5xl mx-auto px-6 py-20 text-center">
           <h1 className="text-4xl font-bold tracking-tight">Simple, transparent pricing</h1>
           <p className="mt-4 text-lg text-gray-600 max-w-xl mx-auto">
-            Pay per NDA or subscribe for unlimited access. No hidden fees. 30-day money-back guarantee.
+            Pay per NDA. No subscription, no hidden fees. 30-day money-back guarantee.
           </p>
         </section>
 
         <section className="max-w-5xl mx-auto px-6 pb-20">
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {tiers.map((tier) => (
               <div
                 key={tier.name}
