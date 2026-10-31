@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { resolveBaseUrl } from "@/lib/base-url";
 import type { NdaData } from "@/lib/nda-template";
 import { generateNdaHtml } from "@/lib/nda-html";
 import { getStripe } from "@/lib/stripe";
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
   const isMutual = ndaData.ndaType === "mutual";
   const docName = `${isMutual ? "Mutual" : "Unilateral"} NDA — ${ndaData.disclosingPartyName} & ${ndaData.receivingPartyName}`;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = resolveBaseUrl(request.nextUrl.origin);
 
   const res = await fetch("https://www.signwell.com/api/v1/documents", {
     method: "POST",

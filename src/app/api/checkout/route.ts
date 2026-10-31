@@ -1,6 +1,14 @@
 import { NextRequest } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, isStripeConfigured } from "@/lib/stripe";
+import { resolveBaseUrl } from "@/lib/base-url";
 import type { NdaData } from "@/lib/nda-template";
+
+function errorMessage(err: unknown): string {
+  if (err && typeof err === "object" && "message" in err) {
+    return String((err as { message?: unknown }).message);
+  }
+  return String(err);
+}
 
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get("session_id");
@@ -8,19 +16,32 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Missing session_id" }, { status: 400 });
   }
 
-  const session = await getStripe().checkout.sessions.retrieve(sessionId);
+  try {
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
 
-  if (session.payment_status === "paid" && session.metadata?.ndaData) {
-    const ndaData: NdaData = JSON.parse(session.metadata.ndaData);
-    const tier = session.metadata?.tier || "basic";
-    return Response.json({ paid: true, ndaData, tier });
+    if (session.payment_status === "paid" && session.metadata?.ndaData) {
+      const ndaData: NdaData = JSON.parse(session.metadata.ndaData);
+      const tier = session.metadata?.tier || "basic";
+      return Response.json({ paid: true, ndaData, tier });
+    }
+
+    return Response.json({ paid: false });
+  } catch (err) {
+    console.error("[checkout] session lookup failed:", errorMessage(err));
+    return Response.json(
+      { paid: false, error: "Could not verify payment. Please contact support." },
+      { status: 500 }
+    );
   }
-
-  return Response.json({ paid: false });
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
   const { tier = "basic", ...ndaData } = body as { tier?: string } & NdaData;
 
   // Validate required fields
@@ -52,6 +73,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (!isStripeConfigured()) {
+    console.error("[checkout] STRIPE_SECRET_KEY is not set");
+    return Response.json(
+      { error: "Payments are temporarily unavailable. Please try again later." },
+      { status: 503 }
+    );
+  }
+
   const tierPricing: Record<string, number> = {
     basic: 2900,
     pro: 5900,
@@ -61,31 +90,39 @@ export async function POST(request: NextRequest) {
   const tierLabel =
     tier === "pro" ? " Professional" : tier === "biz" ? " Business" : "";
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = resolveBaseUrl(request.nextUrl.origin);
 
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
-    allow_promotion_codes: true,
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          unit_amount: amount,
-          product_data: {
-            name: `${ndaData.ndaType === "mutual" ? "Mutual" : "Unilateral"}${tierLabel} Non-Disclosure Agreement`,
-            description: `NDA between ${ndaData.disclosingPartyName} and ${ndaData.receivingPartyName}`,
+  try {
+    const session = await getStripe().checkout.sessions.create({
+      mode: "payment",
+      allow_promotion_codes: true,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: amount,
+            product_data: {
+              name: `${ndaData.ndaType === "mutual" ? "Mutual" : "Unilateral"}${tierLabel} Non-Disclosure Agreement`,
+              description: `NDA between ${ndaData.disclosingPartyName} and ${ndaData.receivingPartyName}`,
+            },
           },
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      metadata: {
+        ndaData: ndaJson,
+        tier,
       },
-    ],
-    metadata: {
-      ndaData: ndaJson,
-      tier,
-    },
-    success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/create`,
-  });
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/create`,
+    });
 
-  return Response.json({ url: session.url });
+    return Response.json({ url: session.url });
+  } catch (err) {
+    console.error("[checkout] session create failed:", errorMessage(err));
+    return Response.json(
+      { error: "Payments are temporarily unavailable. Please try again shortly." },
+      { status: 502 }
+    );
+  }
 }

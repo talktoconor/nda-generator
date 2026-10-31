@@ -99,7 +99,11 @@ function CreateContent() {
         localStorage.removeItem("ndanow_draft");
         window.location.href = data.url;
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(
+          typeof data.error === "string" && data.error
+            ? data.error
+            : "Something went wrong. Please try again."
+        );
         setLoading(false);
       }
     } catch {
