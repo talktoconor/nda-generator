@@ -92,6 +92,17 @@ export async function POST(request: NextRequest) {
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       allow_promotion_codes: true,
+      // The Stripe account is shared with other Gulch Alley Studios products,
+      // so brand this session as NDANow instead of the account's public name.
+      branding_settings: {
+        display_name: "NDANow · Gulch Alley Studios",
+        button_color: "#2563eb",
+        border_style: "rounded",
+      },
+      payment_intent_data: {
+        description: `NDANow ${tier === "pro" ? "Professional" : "Basic"} NDA`,
+        statement_descriptor_suffix: "NDANOW",
+      },
       line_items: [
         {
           price_data: {
